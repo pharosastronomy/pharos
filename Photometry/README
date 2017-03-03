@@ -1,0 +1,34 @@
+All Photometry routines are to be found here. The code is based on the routines
+of Tim Naylor's optimal extraction code. For a thorough explanation of the 
+algorithms read the following two papers:
+
+"An Optimal Extraction Algorithm for Imaging Photometry"
+Naylor Tim, MNRAS, 296, 399, 1998
+
+"Optimal Photometry for Colour-Magnitude Diagrams and its Application on NGC 2547"
+Naylor, Tim et al. MNRAS, 335, 291, 2002
+
+Requirements:
+opt_extr.f90 - All the required routines for optimal and aperature photometry
+marq.f90     - Computes Marquardt routines needed for profile fitting
+cfitsio      - NASA's FITS file manipulation library needs to be installed.
+
+The photometry code compiles by doing the following:
+- edit optimal.csh and provide the path for the cfitsio library in your system.
+- source optimal.csh
+
+Alternatively (I use g95 but any Fortran compiler will do):
+g95 -c opt_extr.f90 marq.f90
+g95 -o optimal optimal.f90 marq.o opt_extr.o -L/<Local Path>/cfitsio -lcfitsio
+
+Example:
+gfortran -c opt_extr.f90 marq.f90
+(you will get a messge that Fatal Error: Can't open module file 'marq.mod'. Just run it again)
+gfortran -c opt_extr.f90 marq.f90
+then:
+gfortran -o optimal optimal.f90 marq.o opt_extr.o -L /usr/local/lib -lcfitsio
+
+Required improvements:
+1. Include flagging of bad pixels, bad stars, bad sky etc. This feature was removed from
+   The original codein order to make the code independent of the ARK software package. 
+

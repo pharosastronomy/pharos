@@ -1,0 +1,130 @@
+
+----------------------------------------------------------
+--- To run RTPHoS on fresh install of Fedora 23 ----------
+--- installation instructions version 10-Jun-2016 --------
+----------------------------------------------------------
+--- Tested on 64-bit Fedora 23 ---------------------------
+
+# ==============================================================================
+# 1. GENERAL REQUIREMENTS
+# ==============================================================================
+# RTPhoS runs on Python 2.7.xxx which comes installed with Fedora.
+# Install tcsh, GCC, gfortran, DS9 and other prerequisites as described below.
+# We Recommend to install everything as root to avoid linking issues later.
+
+# You need to have tcsh installed and set as the user default shell
+dnf install tcsh
+
+# Install gcc, fortran, and required python modules
+dnf install gcc
+dnf install gcc-gfortran
+pip install numpy
+pip install scipy
+dnf install python-matplotlib
+pip install astropy (might require package redhat-rpm-config to be installed
+                     in which case do: pip install redhat-rpm-config and repeat
+                     pip install astropy).
+pip install pyregion
+
+# ==============================================================================
+# 2. DS9 VIEWER AND COMMUNICATION WITH DS9 (XPA, pyds9)
+# ==============================================================================
+# Download SAOimage DS9 7.1   
+# (please use version 7.1 to avoid some bugs with XPA in later versions)
+# can be found in http://ds9.si.edu/archive/
+tar xvfz ds9.linux64.7.1.tar.gz 
+sudo mv ds9 /usr/local/bin/
+
+# Download and install XPA       : https://github.com/ericmandel/xpa
+# unpack and run in XPA directory
+./configure		
+make			
+sudo make install	
+sudo make clean
+
+# Download pyds9 from            : https://github.com/ericmandel/pyds9
+dnf install libXt-devel          (required library)
+
+#unpack pyds9 archive and run 
+python setup.py install
+
+# ==============================================================================
+# 3. ZeroMQ Messaging System
+# ==============================================================================
+dnf install zeromq
+pip install pyzmq
+
+# ==============================================================================
+# 4. CFITSIO Library
+# ==============================================================================
+# Download and install cfitsio library
+# http://heasarc.gsfc.nasa.gov/docs/software/fitsio/fitsio.html
+# unpack, cd to cfitsio dir and run as root
+./configure
+make
+make install
+make clean
+# you will point to lib subdirectory of this directory where cfitsio has been installed
+# when you need to compile /RTPhoS/Photometry/optimal.f90 below.
+
+# ==============================================================================
+# 5. Download RTPhoS
+# ==============================================================================
+# Clone the RTPhoS repo:
+git clone https://github.com/mbogosavljevic/RTPhoS
+
+# ==============================================================================
+# 6. BARYCOR & OPPHOT installation
+# ==============================================================================
+# Steps below require editing for correct paths and compiler settings.
+# Compile /RTPhoS/Timing/barycor.f90
+cd ./RTPhoS/Timing
+gfortran -o barycor barycor.f90 libjpl.a_64bit libf95.a_64bit
+
+# Compile /RTPhoS/Photometry/optimal.f90 
+cd .RTPhoS/Photometry 
+# You have to edit optimal.csh for path to cfitsio library and source it
+source optimal.csh
+
+# Put barycor and optimal executables locations in your path for tcsh
+echo 'set path = ($path /path-to/RTPhoS/Photometry /path-to/RTPhoS/Timing)' >> ~/.tcshrc
+
+# ==============================================================================
+# 7. Install F2N for Creating PNG images from FITS images in Python
+# ==============================================================================
+# Depending on your system some or all of these might need to be installed
+# before installing pillow:
+dnf install python-devel
+dnf install zlib-devel
+dnf install libjpeg-turbo-devel
+
+# Install pillow
+pip install pillow                   
+                     
+# Download and install f2n       
+# f2n used to rely on PIL, but now you can use pillow installation above
+# no need to install PIL (deprecated)
+# f2n author has suggested installation using subversion (svn) if missing from
+# your system you can install it:
+dnf install subversion
+
+# to install f2n:
+svn export https://svn.epfl.ch/svn/mtewes-public/trunk/f2n ./f2n
+cd f2n
+sudo python setup.py install
+
+# The following are needed to make f2n functional with updated python modules
+# edit the following file as root:
+/usr/local/lib/python2.7/dist-packages/f2n/f2n.py
+
+# instead of import pyfits as ft it should read:
+import astropy.io.fits as ft
+
+# line 407, instead edit to say just:
+bwarray = np.zeros(calcarray.shape)
+# this will make it compatible with numpy 1.10 and above
+
+# ==============================================================================
+# CONGRATULATIONS START DS9 and ENJOY RTPhoS
+# ==============================================================================
+
