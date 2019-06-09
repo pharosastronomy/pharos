@@ -1,0 +1,119 @@
+
+----------------------------------------------------------
+--- To run Pharos on fresh install of Ubuntu 14.04 LTS ---
+--- installation instructions version 17-Feb-2016 --------
+----------------------------------------------------------
+--- Tested on 64-bit Ubuntu ------------------------------
+
+# 1 ----------------------------
+# --- GENERAL REQUIREMENTS ----
+# Pharos runs on Python 2.7.xxx which comes installed on Ubuntu 14.04 LTS
+# Install GCC, gfortran, Python PIP and other prerequisites 
+
+sudo apt-get install build-essential gfortran libatlas-base-dev python-pip python-dev python-matplotlib 
+sudo apt-get install libxt-dev zlib1g-dev libjpeg-dev libpng3 libfreetype6-dev liblcms1-dev
+sudo apt-get install tcsh git subversion 
+
+# you do need to make sure you have tcsh installed
+# note that last two, git and subversion, are installed for convenience
+# of the below described installation process and they are NOT required for Pharos to work.
+
+
+# 2 ----------------------------
+# --- PYTHON PACKAGES ----
+sudo pip install numpy 
+sudo pip install scipy
+sudo pip install astropy
+sudo pip install pyregion
+sudo pip install pyfits
+
+# 3 ----------------------------
+# --- DS9 VIEWER AND COMMUNICATION WITH DS9 (XPA, pyds9)
+# Download SAOimage DS9 7.1   
+# (please use version 7.1 to avoid some bugs with XPA in later versions)
+# can be found in http://ds9.si.edu/archive/
+ tar xvfz ds9.linux64.7.1.tar.gz 
+ sudo mv ds9 /usr/local/bin/
+
+# Download and install XPA       : https://github.com/ericmandel/xpa
+       # unpack and run in XPA directory
+	./configure		# site-specific configuration
+	make			# build the software
+	sudo make install	# install it
+	sudo make clean		# clean up unneeded temp files
+
+# Install pyds9 with PIP:
+sudo pip install git+https://github.com/ericmandel/pyds9.git#egg=pyds9
+
+# or if you do not want to use Git, download pyds9 from
+# https://github.com/ericmandel/pyds9 to install with python
+# unpack and run 
+# > python setup.py [--user] install
+
+# 4 -----------------------------------------
+# --- CREATING IMAGES FROM FITS IN PYTHON (***NEEDS updated instructions)
+# Install python imaging Pillow and PIP (for f2n below)
+sudo pip install pillow   
+                          
+# Download and install f2n       
+# f2n used to rely on PIL, but now you can use pillow installation above
+# no need to install PIL (deprecated)
+# f2n author has suggested installation using subversion (svn):
+svn export https://svn.epfl.ch/svn/mtewes-public/trunk/f2n ./f2n
+cd f2n
+sudo python setup.py install
+
+          #     edit the following file as root:
+          /usr/local/lib/python2.7/dist-packages/f2n/f2n.py
+          #    instead of import pyfits as ft it should read:
+          import astropy.io.fits as ft
+	  # line 407, instead edit to say just:
+	  bwarray = np.zeros(calcarray.shape)
+	  # this will make it compatible with numpy 1.10 and above
+
+
+# 5 -----------------------------------------------
+# Download and install cfitsio library
+# http://heasarc.gsfc.nasa.gov/docs/software/fitsio/fitsio.html
+# unpack, cd to cfitsio dir and run
+  ./configure
+  make
+  sudo make install
+  sudo make clean
+# you will point to lib subdirectory of this directory where cfitsio has been installed
+# when you need to compile /Pharos/Photometry/optimal.f90 below.
+
+#6 ------------------------------------------------
+# Install ZeroMQ and python-zmq binding for Python
+sudo apt-get install libzmq-dev
+# python-zmq
+sudo apt-get install python-zmq
+
+#---------------------------------------------------------------------------------
+# --- DONE WITH PREREQUISITES ----------------------------------------------------
+#---------------------------------------------------------------------------------
+
+# -------------------------------------------------------------------------------
+# 7 -Pull Pharos repo from https://github.com/pharosastronomy/pharos
+
+git clone https://github.com/pharosastronomy/Pharos
+
+# After downloading the Pharos repo:
+
+# Steps below require editing for correct paths and compiler settings.
+# Compile /Pharos/Timing/barycor.f90 (see in-code comments on how)
+   # for example
+   cd ./Pharos/Timing/
+   gfortran -o barycor barycor.f90 libjpl.a_64bit libf95.a_64bit
+
+# Compile /Pharos/Photometry/optimal.f90 
+# (edit optimal.csh for path to cfitio library and source it)
+
+# Put barycor and optimal executables locations in your path for tcsh, sh and bash
+
+echo 'set path = ($path /home/milan/Pharos/Photometry /home/milan/Pharos/Timing)'  >> ~/.cshrc
+echo 'export PATH=$PATH:/home/milan/Pharos/Photometry:/home/milan/Pharos/Timing'  >> ~/.profile
+echo 'export PATH=$PATH:/home/milan/Pharos/Photometry:/home/milan/Pharos/Timing'  >> ~/.bash_profile
+echo 'export PATH=$PATH:/home/milan/Pharos/Photometry:/home/milan/Pharos/Timing'  >> ~/.bashrc
+
+
