@@ -1,7 +1,7 @@
 
 ----------------------------------------------------------
---- To run Pharos on fresh install of Fedora 23 ----------
---- installation instructions version 10-Jun-2016 --------
+--- To run Pharos on fresh install of Fedora 29 ----------
+--- installation instructions version 11-Jun-2019 --------
 ----------------------------------------------------------
 --- Tested on 64-bit Fedora 23 ---------------------------
 
@@ -90,7 +90,7 @@ source optimal.csh
 echo 'set path = ($path /path-to/Pharos/Photometry /path-to/Pharos/Timing)' >> ~/.tcshrc
 
 # ==============================================================================
-# 7. Install F2N for Creating PNG images from FITS images in Python (***Needs updated instructions)
+# 7. Install F2N for Creating PNG images from FITS images in Python
 # ==============================================================================
 # Depending on your system some or all of these might need to be installed
 # before installing pillow:
