@@ -412,7 +412,7 @@ class f2nimage:
 				bwarray = 255 - bwarray
 			
 			if self.verbose:
-				print "PIL range : [%i, %i]" % (np.min(bwarray), np.max(bwarray))
+				print "PIL range : [%f, %f]" % (np.min(bwarray), np.max(bwarray))
 			
 			# We flip it so that (0, 0) is back in the bottom left corner as in ds9
 			# We do this here, so that you can write on the image from left to right :-)	
