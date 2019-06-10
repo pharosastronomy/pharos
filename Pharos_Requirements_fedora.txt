@@ -109,20 +109,10 @@ pip install pillow
 dnf install subversion
 
 # to install f2n:
-svn export https://svn.epfl.ch/svn/mtewes-public/trunk/f2n ./f2n
-cd f2n
-sudo python setup.py install
-
-# The following are needed to make f2n functional with updated python modules
-# edit the following file as root:
-/usr/local/lib/python2.7/dist-packages/f2n/f2n.py
-
-# instead of import pyfits as ft it should read:
-import astropy.io.fits as ft
-
-# line 407, instead edit to say just:
-bwarray = np.zeros(calcarray.shape)
-# this will make it compatible with numpy 1.10 and above
+# use root priviledges
+cd .Pharos/Imaging
+python setup.py install
+cp .Pharos/Imaging/F2n/f2n.py_fix /usr/local/lib/python2.7/dist-packages/f2n/f2n.py
 
 # ==============================================================================
 # CONGRATULATIONS START DS9 and ENJOY PHAROS
