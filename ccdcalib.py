@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
 """
-####################### Real-Time Photometry Server ############################
+########### PHotometry And Real-time Observatory Server #########################
 #                          Calibration Routines
 #
 # For information please contact:
@@ -10,7 +10,7 @@
 # Astronomical Observatory Belgrade  |  Department of Physics
 # Belgrade, Serbia                   |  Sultan Qaboos University
 #                                    |  Muscat, Oman
-# milan@aob.rs                       |  zac@squ.edu.om
+# milanb@nyu.edu	             |  zac@squ.edu.om
 #
 ################################################################################
 
@@ -59,7 +59,7 @@ import glob
 import numpy as np
 import os
 import datetime
-from run_rtphos import make_png
+from run_pharos import make_png
 from   scipy.optimize import curve_fit
 #import matplotlib.pyplot as plt
 #import sys
@@ -377,7 +377,7 @@ def checksize(filelistin, dsize, calltxt):
 #        filesout.append(rtdefs['mbias'])
 
     # Construct the COMMENT header text to be inserted to the output files.
-#    biastxt = "Bias frame created by RTPhoS on "
+#    biastxt = "Bias frame created by pharos on "
 
     # Now go round this loop and create the master bias frames for every
     # available size.
@@ -464,7 +464,7 @@ def makebias(dsize, dirs, rtdefs):
     hdr_out = hdr_in.copy(strip=True)
 
     # Append the supplied text string with the current date and time
-    biastxt = "Bias frame created by RTPhos on "+ datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    biastxt = "Bias frame created by pharos on "+ datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     # Update the output header
     hdr_out['COMMENT'] = (biastxt)          
 
@@ -637,7 +637,7 @@ def makedark (dsize, exposure, dirs, rtdefs):
     hdr_dark = pyfits.getheader(darkfiles[0])
     hdr_out = hdr_dark.copy(strip=True)
     # Make a text string with the current date and time
-    darktxt = "Dark frame created by RTPhoS on " + datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    darktxt = "Dark frame created by pharos on " + datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     # Update the output header
     hdr_out['COMMENT'] = (darktxt)		
 
@@ -866,7 +866,7 @@ def makeflat(dsize, obsfilter, dirs, rtdefs):
     hdr_flat = pyfits.getheader(flatfiles[0])
     hdr_out = hdr_flat.copy(strip=True)
     # Make a text string with the current date and time
-    flattxt = "Flat field frame created by RTPhoS on " + datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    flattxt = "Flat field frame created by pharos on " + datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     # Update the output header
     hdr_out['COMMENT'] = (flattxt)          
 
@@ -1179,7 +1179,7 @@ def calib(rtdefs, dirs, ref_filename, dataref, hdr_data):
           masterbias = bias[1]
        if biascheck:
           dataref = dataref - masterbias
-          biastxt = "Bias was subtracted by RTPhoS on " + datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+          biastxt = "Bias was subtracted by pharos on " + datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
           print "* Bias calibration successfull!"
 
     darkcheck = False
@@ -1202,7 +1202,7 @@ def calib(rtdefs, dirs, ref_filename, dataref, hdr_data):
           masterdark = dark[1]
        if darkcheck:
           dataref = dataref - masterdark
-          darktxt = "Dark was subtracted by RTPhoS on " + datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+          darktxt = "Dark was subtracted by pharos on " + datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
           print "* Dark calibration successfull!"
 
     flatcheck = False
@@ -1232,7 +1232,7 @@ def calib(rtdefs, dirs, ref_filename, dataref, hdr_data):
           flatmedian = np.median(masterflat)
           masterflat = masterflat/flatmedian
           dataref = dataref/masterflat
-          flattxt = "Frame was flat fielded by RTPhoS on " + datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+          flattxt = "Frame was flat fielded by pharos on " + datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
           print "* Median of flat field coefficients: ", np.median(masterflat)
           print "* Flat fielding successfull!"
 

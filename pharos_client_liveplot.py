@@ -77,7 +77,7 @@ def plot_initialize():
     ax5.grid(True)
     ax5.margins(0.1,0.1)
     ax5.set_ylabel('Pixels')
-    #ax5.set_ylim([0,3])
+    ax5.set_ylim([0,3])
 
     return fig, ax1, ax2, ax3, ax4, ax5
     
@@ -118,22 +118,19 @@ def init_datapoins(tempfile, now, bjdswitch):
                 nline = nline + 1
                 obsid         = columns[0]
                 serverport    = columns[1]
-                #UTCdatetime   = columns[2]
-                bandpass      = columns[2]
-                BJD           = np.float64(columns[3]) 
-                targetname    = columns[4]
+                UTCdatetime   = columns[2]
+                bandpass      = columns[3]
+                BJD           = np.float64(columns[4]) 
                 targetflux    = np.float32(columns[5])
                 targetfluxerr = np.float32(columns[6])
-                compname      = columns[7]
-                compflux      = np.float32(columns[8])
-                compfluxerr   = np.float32(columns[9])
-                seeing        = np.float16(columns[10])
+                compflux      = np.float32(columns[7])
+                compfluxerr   = np.float32(columns[8])
+                seeing        = np.float16(columns[9])
 
                 # TBD:
                 # use just data that matches -filter argument
                 # something like matches = [x for x in a if x=='a']
                 
-                UTCdatetime = datetime.utcnow()
                 UTCtimes.append(UTCdatetime)
 
                 if bjdswitch:
@@ -198,7 +195,7 @@ def init_plot_data(fig, ax1, ax2, ax3, ax4, ax5, \
     ax5.set_ylabel('Pixels')
     line5, = ax5.plot(xdata2, yseeing, 'bo') 
     fig.legend([line5,], ['Seeing'], loc='upper left', \
-               bbox_to_anchor=[0.9,0.25], shadow=True, \
+               bbox_to_anchor=[0.9,0.27], shadow=True, \
                numpoints=1, prop={'size':8})
 
     # plot the error bars and collect them in
@@ -234,21 +231,19 @@ def append_datapoints(columns, xdata, yrawtarget, yrawtargeterr, \
     # TBD: this to check if it is the same as previous points
     obsid         = columns[0]
     serverport    = columns[1]
-    #UTCdatetime   = columns[2]
-    bandpass      = columns[2]
-    BJD           = np.float64(columns[3]) 
-    targetname    = columns[4]
+    UTCdatetime   = columns[2]
+    bandpass      = columns[3]
+    BJD           = np.float64(columns[4]) 
     targetflux    = np.float32(columns[5])
     targetfluxerr = np.float32(columns[6])
-    compname      = columns[7]
-    compflux      = np.float32(columns[8])
-    compfluxerr   = np.float32(columns[9])
-    seeing        = np.float16(columns[10])
+    compflux      = np.float32(columns[7])
+    compfluxerr   = np.float32(columns[8])
+    seeing        = np.float16(columns[9])
 
     # TBD:
     # use just data that matches -filter argument
     # something like matches = [x for x in a if x=='a']
-    UTCdatetime = datetime.utcnow()
+
     UTCtimes.append(UTCdatetime)
 
     if bjdswitch:
@@ -282,22 +277,27 @@ def update_plots(ax1, ax2, ax3, ax4, ax5, line3a, line3b, line4, line5, \
                  xdata, yrawtarget, yrawtargeterr, yrawcomp,\
                  yrawcomperr, ydflux, ydfluxerr, yseeing, oldn, args):
 
-    if os.path.exists("target.fits") and os.path.exists("comp.fits"):
-        timage = fits.getdata('target.fits')
-        cimage = fits.getdata('comp.fits')
+    if os.path.exists("t1.fits") and os.path.exists("c1.fits"):
+        timage = fits.getdata('t1.fits')
+        cimage = fits.getdata('c1.fits')
         # Thumbnail image settings
         # Since these are random images need to remove all 0 and negative values.
         medianintens = np.median(timage)
-        timage[timage<=0] = medianintens # Remove zero and negative values
+        timage[timage==0] = medianintens # Remove zero values
         timage = np.log(timage)          # Use for log scale plotting
+        timage = np.absolute(timage)     # Remove negative values 
+        medianintens = np.median(timage)
+        cimage[timage==0] = medianintens # Remove zero values
+        medianintens = np.median(cimage)
+        cimage[timage==0] = medianintens # Remove zero values
+        cimage = np.log(cimage)          # Use for log scale plotting
+        cimage = np.absolute(cimage)     # Remove negative values 
+        medianintens = np.median(cimage)
+        timage[timage==0] = medianintens # Remove zero values
         cropmin = np.amin(timage)        # Scale is set based on target image
         cropmax = np.amax(timage)
         # Attempt for a reasonable thumbnail intensity scale 
         maxintens = ((cropmax-cropmin)/2.0)+cropmin
-        medianintens = np.median(cimage)
-        cimage[timage<=0] = medianintens # Remove zero values and negative values
-        cimage = np.log(cimage)          # Use for log scale plotting
-
         # Target thumbnail
         ax1.plot([50,50],[0,100],'r:')             # Plot cross-hairs
         ax1.plot([0,100],[50,50],'r:')             #      -""-
@@ -306,7 +306,7 @@ def update_plots(ax1, ax2, ax3, ax4, ax5, line3a, line3b, line4, line5, \
         # Comparison thumbnail
         ax2.plot([50,50],[0,100],'r:')             # Plot cross-hairs
         ax2.plot([0,100],[50,50],'r:')             #      -""-
-        ax2.imshow(cimage, cmap='gray', norm=LogNorm(vmin=cropmin, vmax=maxintens))
+        ax2.imshow(timage, cmap='gray', norm=LogNorm(vmin=cropmin, vmax=maxintens))
 
     # Raw counts
     line3a.set_xdata(xdata)
@@ -357,22 +357,27 @@ def update_plots_jd(ax1, ax2, ax3, ax4, ax5, line3a, line3b, line4, line5, \
                     xdata, yrawtarget, yrawtargeterr, yrawcomp,\
                     yrawcomperr, ydflux, ydfluxerr, yseeing, oldn):
 
-    if os.path.exists("target.fits") and os.path.exists("comp.fits"):
-        timage = fits.getdata('target.fits')
-        cimage = fits.getdata('comp.fits')
+    if os.path.exists("t1.fits") and os.path.exists("c1.fits"):
+        timage = fits.getdata('t1.fits')
+        cimage = fits.getdata('c1.fits')
         # Thumbnail image settings
         # Since these are random images need to remove all 0 and negative values.
         medianintens = np.median(timage)
-        timage[timage<=0] = medianintens # Remove zero and negative values
+        timage[timage==0] = medianintens # Remove zero values
         timage = np.log(timage)          # Use for log scale plotting
+        timage = np.absolute(timage)     # Remove negative values 
+        medianintens = np.median(timage)
+        cimage[timage==0] = medianintens # Remove zero values
+        medianintens = np.median(cimage)
+        cimage[timage==0] = medianintens # Remove zero values
+        cimage = np.log(cimage)          # Use for log scale plotting
+        cimage = np.absolute(cimage)     # Remove negative values 
+        medianintens = np.median(cimage)
+        timage[timage==0] = medianintens # Remove zero values
         cropmin = np.amin(timage)        # Scale is set based on target image
         cropmax = np.amax(timage)
         # Attempt for a reasonable thumbnail intensity scale 
         maxintens = ((cropmax-cropmin)/2.0)+cropmin
-        medianintens = np.median(cimage)
-        cimage[timage<=0] = medianintens # Remove zero values and negative values
-        cimage = np.log(cimage)          # Use for log scale plotting
-
         # Target thumbnail
         ax1.plot([50,50],[0,100],'r:')             # Plot cross-hairs
         ax1.plot([0,100],[50,50],'r:')             #      -""-
@@ -381,38 +386,7 @@ def update_plots_jd(ax1, ax2, ax3, ax4, ax5, line3a, line3b, line4, line5, \
         # Comparison thumbnail
         ax2.plot([50,50],[0,100],'r:')             # Plot cross-hairs
         ax2.plot([0,100],[50,50],'r:')             #      -""-
-        ax2.imshow(cimage, cmap='gray', norm=LogNorm(vmin=cropmin, vmax=maxintens))
-
-#    if os.path.exists("target.fits") and os.path.exists("comp.fits"):
-#        timage = fits.getdata('target.fits')
-#        cimage = fits.getdata('comp.fits')
-#        # Thumbnail image settings
-#        # Since these are random images need to remove all 0 and negative values.
-#        medianintens = np.median(timage)
-#        timage[timage==0] = medianintens # Remove zero values
-#        timage = np.log(timage)          # Use for log scale plotting
-#        timage = np.absolute(timage)     # Remove negative values 
-#        medianintens = np.median(timage)
-#        cimage[timage==0] = medianintens # Remove zero values
-#        medianintens = np.median(cimage)
-#        cimage[timage==0] = medianintens # Remove zero values
-#        cimage = np.log(cimage)          # Use for log scale plotting
-#        cimage = np.absolute(cimage)     # Remove negative values 
-#        medianintens = np.median(cimage)
-#        timage[timage==0] = medianintens # Remove zero values
-#        cropmin = np.amin(timage)        # Scale is set based on target image
-#        cropmax = np.amax(timage)
-#        # Attempt for a reasonable thumbnail intensity scale 
-#        maxintens = ((cropmax-cropmin)/2.0)+cropmin
-#        # Target thumbnail
-#        ax1.plot([50,50],[0,100],'r:')             # Plot cross-hairs
-#        ax1.plot([0,100],[50,50],'r:')             #      -""-
-#        ax1.imshow(timage, cmap='gray', norm=LogNorm(vmin=cropmin, vmax=maxintens))
-
-#        # Comparison thumbnail
-#        ax2.plot([50,50],[0,100],'r:')             # Plot cross-hairs
-#        ax2.plot([0,100],[50,50],'r:')             #      -""-
-#        ax2.imshow(timage, cmap='gray', norm=LogNorm(vmin=cropmin, vmax=maxintens))
+        ax2.imshow(timage, cmap='gray', norm=LogNorm(vmin=cropmin, vmax=maxintens))
 
     #print "Xdata:", len(xdata)
     #print "Yraw", len(yrawtarget)
@@ -516,7 +490,7 @@ if uselog:
         # remember the time when file has been read last
         lastdatafiletime = os.stat(args.logfile).st_mtime
         
-        # TBD:pharos_client_liveplot.py
+        # TBD:
         # now filter out the last -npoints
         # .....
 
