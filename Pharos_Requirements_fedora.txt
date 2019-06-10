@@ -3,7 +3,7 @@
 --- To run Pharos on fresh install of Fedora 29 ----------
 --- installation instructions version 11-Jun-2019 --------
 ----------------------------------------------------------
---- Tested on 64-bit Fedora 23 ---------------------------
+--- Tested on 64-bit Fedora 29 ---------------------------
 
 # ==============================================================================
 # 1. GENERAL REQUIREMENTS
