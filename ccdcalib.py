@@ -279,7 +279,7 @@ def makefilelist(wildcard, directory="."):
     filelist = sorted(glob.glob(wildcard))
 
     # Discard the files without a .fit or .fits extension and count what is left.
-    filelist = [f for f in filelist if f.endswith('.fits') or f.endswith('.fit')]
+    filelist = [f for f in filelist if f.endswith('.fits') or f.endswith('.fit') or f.endswith('.FIT')]
     filenum = len(filelist)     
     print "Found ", filenum, wildcard, "frames!"
 

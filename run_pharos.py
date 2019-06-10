@@ -615,7 +615,7 @@ def seekfits(rtdefs, dataref, dirs, tsleep, comparisons, targets, psf_fwhm):
                 filename = dirs['data']+'/'+filein
                    
                 # WARNING - hardcoded the '.fits' or '.fit' extensions
-                if (filename.endswith('.fits') or filename.endswith('.fit')):
+                if (filename.endswith('.fits') or filename.endswith('.fit') or filename.endswith('.FIT'):
                     # Can load both data and header with this trick
                     data2, hdr = pyfits.getdata(filename, header=True) 
                     print "* Processing image: "+filename
